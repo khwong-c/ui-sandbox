@@ -2,6 +2,7 @@ package chat
 
 import (
 	"context"
+
 	"dnd/backend/drivers/sql"
 	"dnd/backend/features/chat/repo"
 	"dnd/backend/tooling/di"
@@ -33,7 +34,7 @@ func (o *Orchestrator) CreateSession(ctx context.Context) (uuid.UUID, error) {
 }
 
 func (o *Orchestrator) GetSession(ctx context.Context, id uuid.UUID) (*GameSession, error) {
-	if exists, err := o.repo.IsSessionEnded(ctx, id); err != nil || !exists {
+	if exists, err := o.repo.IsSessionExist(ctx, id); err != nil || !exists {
 		return nil, oops.Wrapf(err, "session not found")
 	}
 	return &GameSession{
@@ -46,4 +47,8 @@ func (o *Orchestrator) GetSession(ctx context.Context, id uuid.UUID) (*GameSessi
 func (o *Orchestrator) NotifySessionEvent(ctx context.Context, id uuid.UUID) error {
 	o.notifier.NextWithContext(ctx, id)
 	return nil
+}
+
+func (o *Orchestrator) GetNotifier() ro.Subject[uuid.UUID] {
+	return o.notifier
 }

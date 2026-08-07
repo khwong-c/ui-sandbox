@@ -30,13 +30,18 @@ func (r *SessionRepo) Migrate() error {
 
 func (r *SessionRepo) CreateSession(ctx context.Context) (uuid.UUID, error) {
 	newSession := Session{}
-	if err := gorm.G[Session](r.db).Create(ctx, &newSession); err != nil {
-		return uuid.Nil, oops.Wrapf(err, "failed to create session")
-	}
-	return newSession.ID, nil
+	err := r.db.Transaction(func(tx *gorm.DB) error {
+		if err := gorm.G[Session](r.db).Create(ctx, &newSession); err != nil {
+			return oops.Wrapf(err, "failed to create session")
+		}
+		sessID := newSession.ID
+		err := r.AddEvent(ctx, sessID, EventChatInit, nil)
+		return oops.Wrapf(err, "failed to add init event")
+	})
+	return newSession.ID, err
 }
 
-func (r *SessionRepo) AddEvents(ctx context.Context, sess uuid.UUID, eventType EventType, payload any) error {
+func (r *SessionRepo) AddEvent(ctx context.Context, sess uuid.UUID, eventType EventType, payload any) error {
 	newEvent := SessionEvent{
 		SessionID:    sess,
 		Type:         eventType,
@@ -88,4 +93,22 @@ func (r *SessionRepo) IsSessionExist(ctx context.Context, sess uuid.UUID) (bool,
 		return false, oops.Wrapf(err, "failed to Count")
 	}
 	return cnt > 0, nil
+}
+
+func (r *SessionRepo) GetLatestEventType(ctx context.Context, sess uuid.UUID) (EventType, error) {
+	events, err := gorm.G[SessionEvent](r.db).
+		Where(SessionEvent{
+			SessionID: sess,
+		}).
+		Select("Type").
+		Order("id DESC").
+		Limit(1).
+		Find(ctx)
+	if err != nil || len(events) == 0 {
+		return "", oops.Join(
+			oops.New("session events not found"),
+			oops.Wrapf(err, "Failed to query Data Storage"),
+		)
+	}
+	return events[0].Type, nil
 }
