@@ -5,24 +5,20 @@ import (
 	"encoding/json"
 
 	"github.com/google/uuid"
-	"github.com/samber/do"
 	"github.com/samber/oops"
 	"gorm.io/gorm"
 
-	"dnd/backend/drivers/sql"
 	"dnd/backend/tooling"
-	"dnd/backend/tooling/di"
 )
 
 type SessionRepo struct {
 	db *gorm.DB
 }
 
-func NewSessionRepo(i *do.Injector) (*SessionRepo, error) {
-	repo := &SessionRepo{
-		db: di.InvokeOrProvide(i, sql.NewInMemorySQLite),
+func NewSessionRepo(db *gorm.DB) *SessionRepo {
+	return &SessionRepo{
+		db: db,
 	}
-	return repo, repo.Migrate()
 }
 
 func (r *SessionRepo) Migrate() error {
@@ -77,6 +73,16 @@ func (r *SessionRepo) IsSessionEnded(ctx context.Context, sess uuid.UUID) (bool,
 			SessionID:    sess,
 			EndOfSession: true,
 		}).
+		Count(ctx, "*")
+	if err != nil {
+		return false, oops.Wrapf(err, "failed to Count")
+	}
+	return cnt > 0, nil
+}
+
+func (r *SessionRepo) IsSessionExist(ctx context.Context, sess uuid.UUID) (bool, error) {
+	cnt, err := gorm.G[Session](r.db).
+		Where(sess).
 		Count(ctx, "*")
 	if err != nil {
 		return false, oops.Wrapf(err, "failed to Count")

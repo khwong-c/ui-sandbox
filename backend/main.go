@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"dnd/backend/drivers/sql"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -11,6 +12,10 @@ import (
 	"dnd/backend/features/chat/repo"
 	"dnd/backend/tooling/di"
 )
+
+func main() {
+	main1()
+}
 
 func main1() {
 	orch := chat.NewOrchestrator()
@@ -32,9 +37,11 @@ func main1() {
 	orch.AddChat(uuid1, "Fish 1, Second")
 }
 
-func main() {
+func main2() {
 	ctx := context.Background()
-	sessRepo := di.InvokeOrProvide(nil, repo.NewSessionRepo)
+	db := di.InvokeOrProvide(nil, sql.NewInMemorySQLite)
+	sessRepo := repo.NewSessionRepo(db)
+	_ = sessRepo.Migrate()
 	sess, _ := sessRepo.CreateSession(ctx)
 	_ = sessRepo.AddEvents(ctx, sess, repo.EventChatFromGoblin, nil)
 	_ = sessRepo.AddEvents(ctx, sess, repo.EventChatFromGoblin, nil)

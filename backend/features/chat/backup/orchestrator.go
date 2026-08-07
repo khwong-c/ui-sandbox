@@ -37,10 +37,8 @@ func (o *Orchestrator) SubscribeChat(session uuid.UUID) ro.Observable[string] {
 		return ro.Just(chatLogs...)
 	}
 
-	chatStream := ro.Pipe3[
+	chatStream := ro.Pipe[
 		uuid.UUID,
-		uuid.UUID,
-		string,
 		string,
 	](
 		o.notifier,
