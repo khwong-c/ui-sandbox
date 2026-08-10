@@ -8,7 +8,7 @@ import (
 	"github.com/samber/oops"
 	"gorm.io/gorm"
 
-	"dnd/backend/tooling"
+	"github.com/khwong-c/dnd/backend/tooling"
 )
 
 type SessionRepo struct {

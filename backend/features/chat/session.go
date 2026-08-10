@@ -9,7 +9,7 @@ import (
 	"github.com/samber/ro"
 	"gorm.io/gorm"
 
-	"dnd/backend/features/chat/repo"
+	"github.com/khwong-c/dnd/backend/features/chat/repo"
 )
 
 type EventPair lo.Tuple3[uuid.UUID, repo.EventType, any]

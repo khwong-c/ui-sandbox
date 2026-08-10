@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/samber/do"
+	"github.com/samber/do/v2"
+	"github.com/samber/lo"
 )
 
-type NamedProvider[T any] func(*do.Injector, string) (T, error)
+type NamedProvider[T any] func(do.Injector, string) (T, error)
 
 func providerKey[T any, TProvider do.Provider[T] | NamedProvider[T]](name *string, _ TProvider) string {
 	return diKey[T](name)
@@ -46,11 +47,11 @@ func diKey[T any](tag *string) string {
 	return depKey
 }
 
-func Invoke[T any](injector *do.Injector) T {
+func Invoke[T any](injector do.Injector) T {
 	return InvokeNamed[T](injector, nil)
 }
 
-func InvokeNamed[T any](injector *do.Injector, name *string) T {
+func InvokeNamed[T any](injector do.Injector, name *string) T {
 	key := invokeKey[T](name)
 	inst, err := do.InvokeNamed[T](injector, key)
 	if err != nil {
@@ -59,7 +60,7 @@ func InvokeNamed[T any](injector *do.Injector, name *string) T {
 	return inst
 }
 
-func Provide[T any](injector *do.Injector, provider do.Provider[T]) {
+func Provide[T any](injector do.Injector, provider do.Provider[T]) {
 	key := providerKey[T](nil, provider)
 	inst, err := provider(injector)
 	if err != nil {
@@ -68,7 +69,7 @@ func Provide[T any](injector *do.Injector, provider do.Provider[T]) {
 	do.ProvideNamedValue(injector, key, inst)
 }
 
-func ProvideNamed[T any](injector *do.Injector, name string, provider NamedProvider[T]) {
+func ProvideNamed[T any](injector do.Injector, name string, provider NamedProvider[T]) {
 	key := providerKey[T](&name, provider)
 	inst, err := provider(injector, name)
 	if err != nil {
@@ -77,17 +78,29 @@ func ProvideNamed[T any](injector *do.Injector, name string, provider NamedProvi
 	do.ProvideNamedValue(injector, key, inst)
 }
 
-func InvokeOrProvide[T any](injector *do.Injector, provider do.Provider[T]) T {
+func InvokeOrProvide[T any](injector do.Injector, provider do.Provider[T]) T {
 	key := providerKey[T](nil, provider)
-	if err := do.HealthCheckNamed(injector, key); err != nil {
+	found := lo.ContainsBy(
+		injector.ListProvidedServices(),
+		func(svc do.ServiceDescription) bool {
+			return svc.Service == key
+		},
+	)
+	if !found {
 		Provide(injector, provider)
 	}
 	return Invoke[T](injector)
 }
 
-func InvokeOrProvideNamed[T any](injector *do.Injector, name string, provider NamedProvider[T]) T {
+func InvokeOrProvideNamed[T any](injector do.Injector, name string, provider NamedProvider[T]) T {
 	key := providerKey[T](&name, provider)
-	if err := do.HealthCheckNamed(injector, key); err != nil {
+	found := lo.ContainsBy(
+		injector.ListProvidedServices(),
+		func(svc do.ServiceDescription) bool {
+			return svc.Service == key
+		},
+	)
+	if !found {
 		ProvideNamed(injector, name, provider)
 	}
 	return InvokeNamed[T](injector, &name)

@@ -1,11 +1,13 @@
-module dnd
+module github.com/khwong-c/dnd
 
 go 1.26.5
 
 require (
 	github.com/glebarez/sqlite v1.11.0
+	github.com/go-chi/chi/v5 v5.3.1
 	github.com/google/uuid v1.6.0
-	github.com/samber/do v1.6.0
+	github.com/samber/do/http/chi/v2 v2.0.0-20260801130540-505e6d7bf40c
+	github.com/samber/do/v2 v2.1.0
 	github.com/samber/lo v1.53.0
 	github.com/samber/oops v1.23.0
 	github.com/samber/ro v0.4.0
@@ -20,6 +22,7 @@ require (
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/oklog/ulid/v2 v2.1.1 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
+	github.com/samber/go-type-to-string v1.8.0 // indirect
 	go.opentelemetry.io/otel v1.29.0 // indirect
 	go.opentelemetry.io/otel/trace v1.29.0 // indirect
 	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8 // indirect

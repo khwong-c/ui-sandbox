@@ -4,7 +4,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
-	"dnd/backend/drivers/sql"
+	"github.com/khwong-c/dnd/backend/drivers/sql"
 )
 
 type Session struct {

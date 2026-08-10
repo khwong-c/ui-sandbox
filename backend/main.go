@@ -2,17 +2,28 @@ package main
 
 import (
 	"context"
+	"syscall"
 
+	"github.com/samber/do/v2"
 	"github.com/samber/ro"
 
-	"dnd/backend/drivers/sql"
-	"dnd/backend/features/chat"
-	"dnd/backend/features/chat/repo"
-	"dnd/backend/tooling/di"
+	"github.com/khwong-c/dnd/backend/drivers/sql"
+	"github.com/khwong-c/dnd/backend/features/chat"
+	"github.com/khwong-c/dnd/backend/features/chat/repo"
+	"github.com/khwong-c/dnd/backend/server"
+	"github.com/khwong-c/dnd/backend/tooling/di"
 )
 
 func main() {
-	main3()
+	i := do.New()
+	s := di.InvokeOrProvide(i, server.NewServer)
+
+	go s.ListenAndServe()
+
+	// Shutdown Gracefully
+	_, _ = i.ShutdownOnSignals(
+		syscall.SIGINT, syscall.SIGTERM, syscall.SIGKILL,
+	)
 }
 
 func main1() {

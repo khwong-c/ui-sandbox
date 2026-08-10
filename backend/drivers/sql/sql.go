@@ -9,7 +9,7 @@ import (
 	"math/big"
 
 	"github.com/glebarez/sqlite"
-	"github.com/samber/do"
+	"github.com/samber/do/v2"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 )
@@ -61,7 +61,7 @@ func NewSQLite(file string) (*gorm.DB, error) {
 }
 
 // NewInMemorySQLite constructs an in-memory SQLite gorm.DB connection.
-func NewInMemorySQLite(*do.Injector) (*gorm.DB, error) {
+func NewInMemorySQLite(do.Injector) (*gorm.DB, error) {
 	return gorm.Open(
 		sqlite.Open(generateInMemDatabaseDSN()),
 		&gorm.Config{

@@ -3,12 +3,12 @@ package chat
 import (
 	"context"
 
-	"dnd/backend/drivers/sql"
-	"dnd/backend/features/chat/repo"
-	"dnd/backend/tooling/di"
+	"github.com/khwong-c/dnd/backend/drivers/sql"
+	"github.com/khwong-c/dnd/backend/features/chat/repo"
+	"github.com/khwong-c/dnd/backend/tooling/di"
 
 	"github.com/google/uuid"
-	"github.com/samber/do"
+	"github.com/samber/do/v2"
 	"github.com/samber/oops"
 	"github.com/samber/ro"
 	"gorm.io/gorm"
@@ -20,7 +20,7 @@ type Orchestrator struct {
 	notifier ro.Subject[uuid.UUID]
 }
 
-func NewOrchestrator(i *do.Injector) (*Orchestrator, error) {
+func NewOrchestrator(i do.Injector) (*Orchestrator, error) {
 	db := di.InvokeOrProvide(i, sql.NewInMemorySQLite)
 	return &Orchestrator{
 		db:       db,
