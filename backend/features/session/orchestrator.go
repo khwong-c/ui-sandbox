@@ -1,10 +1,10 @@
-package chat
+package session
 
 import (
 	"context"
 
 	"github.com/khwong-c/dnd/backend/drivers/sql"
-	"github.com/khwong-c/dnd/backend/features/chat/repo"
+	"github.com/khwong-c/dnd/backend/features/session/repo"
 	"github.com/khwong-c/dnd/backend/tooling/di"
 
 	"github.com/google/uuid"
@@ -22,9 +22,13 @@ type Orchestrator struct {
 
 func NewOrchestrator(i do.Injector) (*Orchestrator, error) {
 	db := di.InvokeOrProvide(i, sql.NewInMemorySQLite)
+	srepo := repo.NewSessionRepo(db)
+	if err := srepo.Migrate(); err != nil {
+		return nil, oops.Wrapf(err, "failed to migrate session repo")
+	}
 	return &Orchestrator{
 		db:       db,
-		repo:     repo.NewSessionRepo(db),
+		repo:     srepo,
 		notifier: ro.NewPublishSubject[uuid.UUID](),
 	}, nil
 }

@@ -3,7 +3,7 @@ package server
 import (
 	"net/http"
 
-	"github.com/khwong-c/dnd/backend/features/chat"
+	"github.com/khwong-c/dnd/backend/features/session"
 	"github.com/khwong-c/dnd/backend/tooling/di"
 
 	"github.com/go-chi/chi/v5"
@@ -14,7 +14,7 @@ import (
 
 type Server struct {
 	*http.Server
-	orchestrator *chat.Orchestrator
+	orchestrator *session.Orchestrator
 }
 
 func NewServer(i do.Injector) (*Server, error) {
@@ -27,12 +27,13 @@ func NewServer(i do.Injector) (*Server, error) {
 			Addr:    ":7086",
 			Handler: r,
 		},
-		orchestrator: di.InvokeOrProvide(i, chat.NewOrchestrator),
+		orchestrator: di.InvokeOrProvide(i, session.NewOrchestrator),
 	}
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("Hello World"))
 	})
+	newServer.RegisterSessionEndpoints()
 
 	return newServer, nil
 }

@@ -1,7 +1,8 @@
-package chat
+package session
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/google/uuid"
 	"github.com/samber/lo"
@@ -9,12 +10,12 @@ import (
 	"github.com/samber/ro"
 	"gorm.io/gorm"
 
-	"github.com/khwong-c/dnd/backend/features/chat/repo"
+	"github.com/khwong-c/dnd/backend/features/session/repo"
 )
 
-type EventPair lo.Tuple3[uuid.UUID, repo.EventType, any]
+type EventPair lo.Tuple3[uuid.UUID, repo.EventType, json.RawMessage]
 
-func (p EventPair) Unpack() (uuid.UUID, repo.EventType, any) {
+func (p EventPair) Unpack() (uuid.UUID, repo.EventType, json.RawMessage) {
 	return p.A, p.B, p.C
 }
 
@@ -25,7 +26,7 @@ type GameSession struct {
 }
 
 func projectEntryToPair(e repo.SessionEvent, _ int) EventPair {
-	return EventPair{e.ID, e.Type, e.Payload}
+	return EventPair{e.ID, e.Type, (json.RawMessage)(e.Payload)}
 }
 
 func (s *GameSession) GetSessionStream(ctx context.Context) (ro.Observable[EventPair], error) {

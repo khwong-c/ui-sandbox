@@ -47,7 +47,7 @@ func (j *JSONType) Value() (driver.Value, error) {
 	if j == nil || len(*j) == 0 {
 		return nullMsg, nil
 	}
-	return []byte(*j), nil
+	return json.RawMessage(*j), nil
 }
 
 // NewSQLite constructs a file-based SQLite gorm.DB connection.

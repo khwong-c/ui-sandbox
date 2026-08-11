@@ -8,8 +8,8 @@ import (
 	"github.com/samber/ro"
 
 	"github.com/khwong-c/dnd/backend/drivers/sql"
-	"github.com/khwong-c/dnd/backend/features/chat"
-	"github.com/khwong-c/dnd/backend/features/chat/repo"
+	"github.com/khwong-c/dnd/backend/features/session"
+	"github.com/khwong-c/dnd/backend/features/session/repo"
 	"github.com/khwong-c/dnd/backend/server"
 	"github.com/khwong-c/dnd/backend/tooling/di"
 )
@@ -70,7 +70,7 @@ func main3() {
 	r := repo.NewSessionRepo(db)
 	_ = r.Migrate()
 
-	orch := di.InvokeOrProvide(nil, chat.NewOrchestrator)
+	orch := di.InvokeOrProvide(nil, session.NewOrchestrator)
 	id, _ := orch.CreateSession(ctx)
 	sess, _ := orch.GetSession(ctx, id)
 	strm, err := sess.GetSessionStream(ctx)
@@ -78,7 +78,7 @@ func main3() {
 		panic(err)
 	}
 
-	strm.Subscribe(ro.PrintObserver[chat.EventPair]())
+	strm.Subscribe(ro.PrintObserver[session.EventPair]())
 	sess.AddEvent(ctx, repo.EventChatFromGoblin, nil)
 	sess.AddEvent(ctx, repo.EventChatFromGoblin, nil)
 	//sess.AddEvent(ctx, repo.EventEnd, nil)
@@ -87,7 +87,7 @@ func main3() {
 	if err != nil {
 		panic(err)
 	}
-	strm2.Subscribe(ro.PrintObserver[chat.EventPair]())
+	strm2.Subscribe(ro.PrintObserver[session.EventPair]())
 	sess.AddEvent(ctx, repo.EventAskTeam, nil)
 	sess.AddEvent(ctx, repo.EventChatFromTeam, nil)
 	sess.AddEvent(ctx, repo.EventEnd, nil)
